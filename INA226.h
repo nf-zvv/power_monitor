@@ -1,4 +1,4 @@
-//    FILE: INA226.cpp
+//    FILE: INA226.h
 //  AUTHOR: Vitaliy Zinoviev
 // VERSION: 0.1
 //    DATE: 2025-07-06
@@ -6,6 +6,13 @@
 //     URL: 
 //
 //  Read the datasheet for the details
+
+// I2C defines
+// This example will use I2C0 on GPIO8 (SDA) and GPIO9 (SCL) running at 400KHz.
+// Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
+#define I2C_PORT i2c0
+#define I2C_SDA 8
+#define I2C_SCL 9
 
 
 // By default these devices  are on bus address 0x40
@@ -75,22 +82,22 @@ float ina226_getCurrent();
 float ina226_getPower();
 
 bool ina226_reset();
-bool ina226_setAverage(uint8_t avg);
+bool ina226_setAverage(uint8_t);
 uint8_t ina226_getAverage();
-bool ina226_setBusVoltageConversionTime(uint8_t bvct);
+bool ina226_setBusVoltageConversionTime(uint8_t);
 uint8_t ina226_getBusVoltageConversionTime();
-bool ina226_setShuntVoltageConversionTime(uint8_t svct);
+bool ina226_setShuntVoltageConversionTime(uint8_t);
 uint8_t ina226_getShuntVoltageConversionTime();
 
-int ina226_setMaxCurrentShunt(float maxCurrent, float shunt, bool normalize);
-int ina226_configure(float shunt, float current_LSB_mA, float current_zero_offset_mA, uint16_t bus_V_scaling_e4);
+int ina226_setMaxCurrentShunt(float, float, bool);
+int ina226_configure(float, float, float, uint16_t);
 
-bool ina226_setMode(uint8_t mode);
+bool ina226_setMode(uint8_t);
 uint8_t ina226_getMode();
 
-bool ina226_setAlertRegister(uint16_t mask);
+bool ina226_setAlertRegister(uint16_t);
 uint16_t ina226_getAlertFlag();
-bool ina226_setAlertLimit(uint16_t limit);
+bool ina226_setAlertLimit(uint16_t);
 uint16_t ina226_getAlertLimit();
 
 uint16_t ina226_getManufacturerID();

@@ -4,14 +4,6 @@
 
 #include "INA226.h"
 
-// I2C defines
-// This example will use I2C0 on GPIO8 (SDA) and GPIO9 (SCL) running at 400KHz.
-// Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
-#define I2C_PORT i2c0
-#define I2C_SDA 8
-#define I2C_SCL 9
-
-
 
 int main()
 {
@@ -24,18 +16,30 @@ int main()
     gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SDA);
     gpio_pull_up(I2C_SCL);
-    // For more examples of I2C use see https://github.com/raspberrypi/pico-examples/tree/master/i2c
 
     ina226_reset();
     ina226_setAverage(INA226_4_SAMPLES);
     ina226_setBusVoltageConversionTime(INA226_332_us);
     ina226_setShuntVoltageConversionTime(INA226_1100_us);
 
-    
+    float shunt = 0.050f;
+    float current_LSB_mA = 0.050f;
+    float current_zero_offset_mA = 0.0f;
+    uint16_t bus_V_scaling_e4 = 10000;
+
+    ina226_configure(shunt, current_LSB_mA, current_zero_offset_mA, bus_V_scaling_e4);
+
+    float voltage, current, power, shunt_volt;
 
     while (true) {
-        float volt = ina226_getBusVoltage();
-        printf("Voltage: %f", volt);
+        voltage = ina226_getBusVoltage();
+        shunt_volt = ina226_getShuntVoltage();
+        current = ina226_getCurrent();
+        power = ina226_getPower();
+        printf("Voltage: %.3f\n", voltage);
+        printf("Shunt voltage: %.4f\n", shunt_volt);
+        printf("Current: %.3f\n", current);
+        printf("Power: %.3f\n", power);
         sleep_ms(1000);
     }
 }

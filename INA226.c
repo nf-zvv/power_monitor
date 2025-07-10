@@ -1,4 +1,4 @@
-//    FILE: INA226.cpp
+//    FILE: INA226.c
 //  AUTHOR: Vitaliy Zinoviev
 // VERSION: 0.1
 //    DATE: 2025-07-06
@@ -43,8 +43,8 @@ uint16_t _bus_V_scaling_e4 = 10000;
 uint16_t ina226_readRegister(uint8_t reg)
 {
     uint8_t buf[2];
-    i2c_write_blocking(i2c_default, INA226_ADDR, &reg, 1, true);  // true to keep master control of bus
-    i2c_read_blocking(i2c_default, INA226_ADDR, buf, 2, false);  // false - finished with bus
+    i2c_write_blocking(I2C_PORT, INA226_ADDR, &reg, 1, true);  // true to keep master control of bus
+    i2c_read_blocking(I2C_PORT, INA226_ADDR, buf, 2, false);  // false - finished with bus
     return buf[0] << 8 | buf[1];
 }
 
@@ -54,7 +54,7 @@ uint16_t ina226_writeRegister(uint8_t reg, uint16_t value)
     buf[0] = reg;
     buf[1] = value >> 8;
     buf[2] = value & 0xFF;
-    i2c_write_blocking(i2c_default, INA226_ADDR, buf, 3, false);
+    i2c_write_blocking(I2C_PORT, INA226_ADDR, buf, 3, false);
     return 0;
 }
 
@@ -67,7 +67,6 @@ uint16_t ina226_writeRegister(uint8_t reg, uint16_t value)
 float ina226_getBusVoltage()
 {
   uint16_t val = ina226_readRegister(INA226_BUS_VOLTAGE);
-  //    return val * 1.25e-3 * _bus_V_scaling_e4 / 10000;  //  fixed 1.25 mV
   float voltage = val * 1.25e-3;
   if (_bus_V_scaling_e4 != 10000)
   {
