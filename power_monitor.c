@@ -4,6 +4,14 @@
 
 #include "INA226.h"
 
+float battery_charge(float voltage)
+{
+    if (voltage >= 4.25) return 100.0;
+    if (voltage >= 3.75 && voltage < 4.25) return 42*voltage-78.5;
+    if (voltage >= 3.50 && voltage < 3.75) return 236*voltage-806;
+    if (voltage >= 2.99 && voltage < 3.50) return 40*voltage-120;
+    if (voltage < 2.99) return 0.0;
+}
 
 int main()
 {
@@ -29,14 +37,15 @@ int main()
 
     ina226_configure(shunt, current_LSB_mA, current_zero_offset_mA, bus_V_scaling_e4);
 
-    float voltage, current, power, shunt_volt;
+    float voltage, current, power, shunt_volt, charge;
 
     while (true) {
         voltage = ina226_getBusVoltage();
         shunt_volt = ina226_getShuntVoltage();
         current = ina226_getCurrent();
         power = ina226_getPower();
-        printf("%.3f;%.3f;%.3f;%.6f\n", voltage, current, power, shunt_volt);
+        charge = battery_charge(voltage);
+        printf("%.3f;%.3f;%.3f;%.6f;%.1f%%\n", voltage, current, power, shunt_volt, charge);
         sleep_ms(1000);
     }
 }
