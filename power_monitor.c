@@ -36,10 +36,7 @@ int main()
         shunt_volt = ina226_getShuntVoltage();
         current = ina226_getCurrent();
         power = ina226_getPower();
-        printf("Voltage: %.3f\n", voltage);
-        printf("Shunt voltage: %.4f\n", shunt_volt);
-        printf("Current: %.3f\n", current);
-        printf("Power: %.3f\n", power);
+        printf("%.3f;%.3f;%.3f;%.6f\n", voltage, current, power, shunt_volt);
         sleep_ms(1000);
     }
 }
