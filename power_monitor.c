@@ -22,8 +22,8 @@ int main()
     ina226_setBusVoltageConversionTime(INA226_332_us);
     ina226_setShuntVoltageConversionTime(INA226_1100_us);
 
-    float shunt = 0.050f;
-    float current_LSB_mA = 0.050f;
+    float shunt = 0.00206f;
+    float current_LSB_mA = 2.0f;
     float current_zero_offset_mA = 0.0f;
     uint16_t bus_V_scaling_e4 = 10000;
 
