@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
+#include "hardware/rtc.h"
+#include "pico/util/datetime.h"
 
 #include "INA226.h"
 
@@ -37,15 +39,38 @@ int main()
 
     ina226_configure(shunt, current_LSB_mA, current_zero_offset_mA, bus_V_scaling_e4);
 
+    char datetime_buf[256];
+    char *datetime_str = &datetime_buf[0];
+
+    // Start on Monday 21th of July 2025 09:00:00
+    datetime_t t = {
+        .year = 2025,
+        .month = 07,
+        .day = 21,
+        .dotw = 1, // 0 is Sunday, so 5 is Friday
+        .hour = 9,
+        .min = 00,
+        .sec = 00
+    };
+
+    // Start the RTC
+    rtc_init();
+    rtc_set_datetime(&t);
+    sleep_us(64);
+
     float voltage, current, power, shunt_volt, charge;
 
     while (true) {
+        rtc_get_datetime(&t);
+        datetime_to_str(datetime_str, sizeof(datetime_buf), &t);
+        printf("%02d.%02d.%d;%02d:%02d:%02d;", t.day, t.month, t.year, t.hour, t.min, t.sec);
+
         voltage = ina226_getBusVoltage();
         shunt_volt = ina226_getShuntVoltage();
         current = ina226_getCurrent();
         power = ina226_getPower();
         charge = battery_charge(voltage);
-        printf("%.3f;%.3f;%.3f;%.6f;%.1f%%\n", voltage, current, power, shunt_volt, charge);
+        printf("%.3f;%.3f;%.3f;%.6f;%.1f%%\n", datetime_str, voltage, current, power, shunt_volt, charge);
         sleep_ms(1000);
     }
 }

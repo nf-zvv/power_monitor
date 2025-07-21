@@ -40,6 +40,9 @@
     "files.associations": {
         "compare": "c",
         "cstdint": "c",
-        "math.h": "c"
+        "math.h": "c",
+        "i2c.h": "c",
+        "datetime.h": "c",
+        "rtc.h": "c"
     }
 }

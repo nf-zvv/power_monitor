@@ -61,6 +61,7 @@ target_include_directories(power_monitor PRIVATE
 # Add any user requested libraries
 target_link_libraries(power_monitor 
         hardware_i2c
+        hardware_rtc
         )
 
 pico_add_extra_outputs(power_monitor)
