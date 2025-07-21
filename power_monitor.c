@@ -6,6 +6,10 @@
 
 #include "INA226.h"
 
+#define BUFFER_LENGTH 25
+volatile uint8_t buffer[BUFFER_LENGTH];
+volatile uint8_t buffer_index;
+
 float battery_charge(float voltage)
 {
     if (voltage >= 4.25) return 100.0;
@@ -31,6 +35,24 @@ bool repeating_timer_callback(__unused struct repeating_timer *t)
     printf("%.3f;%.3f;%.3f;%.6f;%.1f%%\n", voltage, current, power, shunt_volt, charge);
 
     return true;
+}
+
+bool await_usb_serial_str()
+{
+    int c = getchar_timeout_us(1);
+    if (c != PICO_ERROR_TIMEOUT && buffer_index < BUFFER_LENGTH) {
+        if (c == 13) {
+            buffer[buffer_index++] = 0;
+            return true;
+        }
+        buffer[buffer_index++] = (c & 0xFF);
+    }
+    if (buffer_index >= BUFFER_LENGTH)
+    {
+        buffer_index = 0;
+    }
+    
+    return false;
 }
 
 int main()
@@ -76,6 +98,13 @@ int main()
     add_repeating_timer_ms(-1000, repeating_timer_callback, NULL, &timer);
 
     while (true) {
-        sleep_ms(1000);
+        if (await_usb_serial_str()){
+            uint8_t i;
+            for (i = 0; i < buffer_index; i++) {
+                printf("%c",buffer[i]);
+            }
+            buffer_index = 0;
+            printf("\n");
+        }
     }
 }
