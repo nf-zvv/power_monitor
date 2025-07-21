@@ -15,6 +15,24 @@ float battery_charge(float voltage)
     if (voltage < 2.99) return 0.0;
 }
 
+bool repeating_timer_callback(__unused struct repeating_timer *t)
+{
+    float voltage, current, power, shunt_volt, charge;
+    datetime_t dt;
+
+    rtc_get_datetime(&dt);
+    printf("%02d.%02d.%d;%02d:%02d:%02d;", dt.day, dt.month, dt.year, dt.hour, dt.min, dt.sec);
+
+    voltage = ina226_getBusVoltage();
+    shunt_volt = ina226_getShuntVoltage();
+    current = ina226_getCurrent();
+    power = ina226_getPower();
+    charge = battery_charge(voltage);
+    printf("%.3f;%.3f;%.3f;%.6f;%.1f%%\n", voltage, current, power, shunt_volt, charge);
+
+    return true;
+}
+
 int main()
 {
     stdio_init_all();
@@ -36,11 +54,7 @@ int main()
     float current_LSB_mA = 1.0f;
     float current_zero_offset_mA = 0.0f;
     uint16_t bus_V_scaling_e4 = 10000;
-
     ina226_configure(shunt, current_LSB_mA, current_zero_offset_mA, bus_V_scaling_e4);
-
-    char datetime_buf[256];
-    char *datetime_str = &datetime_buf[0];
 
     // Start on Monday 21th of July 2025 09:00:00
     datetime_t t = {
@@ -58,19 +72,10 @@ int main()
     rtc_set_datetime(&t);
     sleep_us(64);
 
-    float voltage, current, power, shunt_volt, charge;
+    struct repeating_timer timer;
+    add_repeating_timer_ms(-1000, repeating_timer_callback, NULL, &timer);
 
     while (true) {
-        rtc_get_datetime(&t);
-        datetime_to_str(datetime_str, sizeof(datetime_buf), &t);
-        printf("%02d.%02d.%d;%02d:%02d:%02d;", t.day, t.month, t.year, t.hour, t.min, t.sec);
-
-        voltage = ina226_getBusVoltage();
-        shunt_volt = ina226_getShuntVoltage();
-        current = ina226_getCurrent();
-        power = ina226_getPower();
-        charge = battery_charge(voltage);
-        printf("%.3f;%.3f;%.3f;%.6f;%.1f%%\n", datetime_str, voltage, current, power, shunt_volt, charge);
         sleep_ms(1000);
     }
 }

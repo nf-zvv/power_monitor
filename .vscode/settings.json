@@ -43,6 +43,8 @@
         "math.h": "c",
         "i2c.h": "c",
         "datetime.h": "c",
-        "rtc.h": "c"
+        "rtc.h": "c",
+        "random": "c",
+        "limits": "c"
     }
 }
