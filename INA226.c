@@ -48,14 +48,14 @@ uint16_t ina226_readRegister(uint8_t reg)
     return buf[0] << 8 | buf[1];
 }
 
-uint16_t ina226_writeRegister(uint8_t reg, uint16_t value)
+int ina226_writeRegister(uint8_t reg, uint16_t value)
 {
     uint8_t buf[3];
     buf[0] = reg;
     buf[1] = value >> 8;
     buf[2] = value & 0xFF;
-    i2c_write_blocking(I2C_PORT, INA226_ADDR, buf, 3, false);
-    return 0;
+    int status = i2c_write_blocking(I2C_PORT, INA226_ADDR, buf, 3, false);
+    return status;
 }
 
 
@@ -127,9 +127,9 @@ bool ina226_reset()
 {
   uint16_t mask = ina226_readRegister(INA226_CONFIGURATION);
   mask |= INA226_CONF_RESET_MASK;
-  uint16_t result = ina226_writeRegister(INA226_CONFIGURATION, mask);
+  int result = ina226_writeRegister(INA226_CONFIGURATION, mask);
 
-  if (result != 0) return false;
+  if (result < 0) return false;
   //  reset calibration
   _current_LSB = 0;
   _maxCurrent  = 0;

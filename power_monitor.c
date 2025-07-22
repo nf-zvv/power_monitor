@@ -59,25 +59,6 @@ int main()
 {
     stdio_init_all();
 
-    // I2C Initialisation. Using it at 400Khz.
-    i2c_init(I2C_PORT, 400*1000);
-    
-    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
-    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
-    gpio_pull_up(I2C_SDA);
-    gpio_pull_up(I2C_SCL);
-
-    ina226_reset();
-    ina226_setAverage(INA226_4_SAMPLES);
-    ina226_setBusVoltageConversionTime(INA226_332_us);
-    ina226_setShuntVoltageConversionTime(INA226_1100_us);
-
-    float shunt = 0.002292f;
-    float current_LSB_mA = 1.0f;
-    float current_zero_offset_mA = 0.0f;
-    uint16_t bus_V_scaling_e4 = 10000;
-    ina226_configure(shunt, current_LSB_mA, current_zero_offset_mA, bus_V_scaling_e4);
-
     // Start on Monday 21th of July 2025 09:00:00
     datetime_t t = {
         .year = 2025,
@@ -94,8 +75,37 @@ int main()
     rtc_set_datetime(&t);
     sleep_us(64);
 
-    struct repeating_timer timer;
-    add_repeating_timer_ms(-1000, repeating_timer_callback, NULL, &timer);
+    // I2C Initialisation. Using it at 400 kHz.
+    i2c_init(I2C_PORT, 400*1000);
+    
+    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
+    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
+    gpio_pull_up(I2C_SDA);
+    gpio_pull_up(I2C_SCL);
+
+    //uint16_t ret;
+    //ret = ina226_getManufacturerID();
+    //printf("%d", ret);
+
+    if (ina226_reset()) {
+        ina226_setAverage(INA226_4_SAMPLES);
+        ina226_setBusVoltageConversionTime(INA226_332_us);
+        ina226_setShuntVoltageConversionTime(INA226_1100_us);
+
+        float shunt = 0.002292f;
+        float current_LSB_mA = 1.0f;
+        float current_zero_offset_mA = 0.0f;
+        uint16_t bus_V_scaling_e4 = 10000;
+        ina226_configure(shunt, current_LSB_mA, current_zero_offset_mA, bus_V_scaling_e4);
+
+        struct repeating_timer timer;
+        add_repeating_timer_ms(-1000, repeating_timer_callback, NULL, &timer);
+    } 
+    else
+    {
+        i2c_deinit(I2C_PORT);
+        printf("Error: INA226 not found!");
+    }
 
     while (true) {
         if (await_usb_serial_str()){
