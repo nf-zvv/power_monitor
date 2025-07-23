@@ -7,7 +7,7 @@
 #include "INA226.h"
 
 #define BUFFER_LENGTH 25
-volatile uint8_t buffer[BUFFER_LENGTH];
+char buffer[BUFFER_LENGTH];
 volatile uint8_t buffer_index;
 
 float battery_charge(float voltage)
@@ -53,6 +53,34 @@ bool await_usb_serial_str()
     }
     
     return false;
+}
+
+int parse_date(char *dtBuffer)
+{
+    int day, month, year, hour, minute, second;
+    char command;
+
+    if (dtBuffer != NULL)
+    {
+        int result = sscanf(dtBuffer, "%c %d.%d.%d %d:%d:%d", &command, &day, &month, &year, &hour, &minute, &second);
+        if (result = 7)
+        {
+            datetime_t dt = {
+                .year = year,
+                .month = month,
+                .day = day,
+                .dotw = 0,
+                .hour = hour,
+                .min = minute,
+                .sec = second
+            };
+            rtc_set_datetime(&dt);
+        } else {
+            printf("Error: unknown datetime format\n");
+        }
+        
+        
+    }
 }
 
 int main()
@@ -115,6 +143,7 @@ int main()
             }
             buffer_index = 0;
             printf("\n");
+            parse_date(buffer);
         }
     }
 }
